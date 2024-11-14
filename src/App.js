@@ -4,6 +4,8 @@ import Register from './components/Auth/Register';
 import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
 import { getUserRole } from './services/authService';
+import "../node_modules/tw-elements/css/tw-elements.min.css";
+import "../node_modules/tw-elements/js/tw-elements.es.min.js";
 
 function ProtectedRoute({ children, role }) {
   const userRole = getUserRole();
@@ -16,6 +18,7 @@ function ProtectedRoute({ children, role }) {
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
