@@ -2,13 +2,19 @@ import axios from 'axios';
 
 const API_URL = 'http://127.0.0.1:8000/api/users';
 
-export const login = async (login, password) => {
-  const response = await axios.post(`${API_URL}/login/`, { login, password });
-  if (response.data.access) {
-    localStorage.setItem('login', response.data.access);
+export const login = async (username, password) => {
+  try {
+    const response = await axios.post(`${API_URL}/login/`, { username, password });
+    if (response.data.access) {
+      localStorage.setItem('login', response.data.access);
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error during login:', error);
+    throw error;
   }
-  return response.data;
 };
+
 
 export const register = async (email, password) => {
   const response = await axios.post(`${API_URL}/register/`, { email, password });
