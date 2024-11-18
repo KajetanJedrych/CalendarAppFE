@@ -35,21 +35,21 @@ const Login = () => {
                     <div className="text-center">
                       <img
                         className="mx-auto w-48"
-                        src="https://tecdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/lotus.webp"
+                        src="https://cdn.pixabay.com/photo/2020/11/29/07/06/aroma-5786653_640.png"
                         alt="logo"
                       />
                       <h4 className="mb-12 mt-1 pb-1 text-xl font-semibold">
-                        We are The Lotus Team
+                        Studio Masażu Bez i Agrest
                       </h4>
                     </div>
 
                     <form onSubmit={handleLogin}>
-                      <p className="mb-4">Please login to your account</p>
+                      <p className="mb-4">Zaloguj się do swojego konta</p>
                   
                       <input
                         type="text"
                         label="Username"
-                        placeholder="Username"  // This shows "Username" as placeholder text
+                        placeholder="Nazwa"  // This shows "Username" as placeholder text
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="block w-full rounded border p-2 mb-4 bg-transparent text-neutral-800 dark:text-neutral-200 border-neutral-300 focus:border-blue-500"
@@ -58,7 +58,7 @@ const Login = () => {
                       <input
                         type="password"
                         label="Password"
-                        placeholder="Password"
+                        placeholder="Hasło"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="block w-full rounded border p-2 mb-4 bg-transparent text-neutral-800 dark:text-neutral-200 border-neutral-300 focus:border-blue-500"
@@ -74,23 +74,23 @@ const Login = () => {
                                 "linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593)",
                             }}
                           >
-                            Log in
+                            Zaloguj
                           </button>
                         </TERipple>
 
                         <a href="/reset-password" className="text-sm text-neutral-500 dark:text-neutral-300">
-                          Forgot password?
+                          Zapomniałeś hasła?
                         </a>
                       </div>
 
                       <div className="flex items-center justify-between pb-6">
-                        <p className="mb-0 mr-2">Don't have an account?</p>
+                        <p className="mb-0 mr-2">Nie masz Konta?</p>
                         <TERipple rippleColor="light">
                           <a
                              href="/register"
                             className="inline-block rounded border-2 border-danger px-6 pb-[6px] pt-2 text-xs font-medium uppercase leading-normal text-danger transition duration-150 ease-in-out hover:border-danger-600 hover:bg-neutral-500 hover:bg-opacity-10 hover:text-danger-600 focus:border-danger-600 focus:text-danger-600 focus:outline-none focus:ring-0 active:border-danger-700 active:text-danger-700 dark:hover:bg-neutral-100 dark:hover:bg-opacity-10"
                           >
-                            Register
+                            Załóż konto
                           </a>
                         </TERipple>
                       </div>
@@ -109,7 +109,7 @@ const Login = () => {
                 >
                   <div className="px-4 py-6 text-white md:mx-6 md:p-12">
                     <h4 className="mb-6 text-xl font-semibold">
-                      We are more than just a company
+                      Najlepsze studio masażu w mieście
                     </h4>
                     <p className="text-sm">
                       Lorem ipsum dolor sit amet, consectetur adipisicing elit,
