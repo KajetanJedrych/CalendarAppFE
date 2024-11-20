@@ -22,6 +22,12 @@ const ClientDashboard = () => {
       end: new Date(moment().add(1, 'days').add(1, 'hours').toDate()),
     },
   ];
+  const handleDayClick = (slotInfo) => {
+    const selectedDate = moment(slotInfo.start).format('YYYY-MM-DD');
+    navigate(`/day?date=${encodeURIComponent(selectedDate)}`);
+  };
+
+
 
   return (
     <section className="min-h-screen bg-neutral-200 dark:bg-neutral-700 p-8">
@@ -55,7 +61,9 @@ const ClientDashboard = () => {
                 endAccessor="end"
                 style={{ height: '40vh', width: '100%' }}
                 views={['month']}
-                onSelectEvent={() => navigate('/calendar')}
+                selectable
+                onSelectSlot={handleDayClick}
+                onSelectEvent={(event) => navigate(`/event/${event.title}`)}
                 messages={{
                   today: 'Dzisiaj',
                   previous: 'Poprzedni',

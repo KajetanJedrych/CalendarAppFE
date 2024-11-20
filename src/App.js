@@ -3,6 +3,7 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
+import DayPage from './components/Calendar/DayPage';
 import { getUserRole } from './services/authService';
 import "../node_modules/tw-elements/css/tw-elements.min.css";
 import "../node_modules/tw-elements/js/tw-elements.es.min.js";
@@ -23,6 +24,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/calendar" element={<Calendar />} />
+      <Route path="/day" element={<DayPage />} />
     </Routes>
   );
 }
