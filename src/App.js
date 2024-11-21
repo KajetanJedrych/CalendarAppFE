@@ -7,25 +7,42 @@ import DayPage from './components/Calendar/DayPage';
 import { getUserRole } from './services/authService';
 import "../node_modules/tw-elements/css/tw-elements.min.css";
 import "../node_modules/tw-elements/js/tw-elements.es.min.js";
-
-function ProtectedRoute({ children, role }) {
-  const userRole = getUserRole();
-  if (!userRole || (role && userRole !== role)) {
-    return <Navigate to="/" />;
-  }
-  return children;
-}
+import { AuthProvider } from "./components/Auth/AuthContex";
+import ProtectedRoute from "./components/ProtectRoute"; // Keep the imported ProtectedRoute
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/calendar" element={<Calendar />} />
-      <Route path="/day" element={<DayPage />} />
-    </Routes>
+    <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <Calendar />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/day"
+            element={
+              <ProtectedRoute>
+                <DayPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+    </AuthProvider>
   );
 }
 

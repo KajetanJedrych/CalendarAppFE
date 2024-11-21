@@ -51,12 +51,12 @@ const DayPage = () => {
 
   return (
     <section className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-neutral-700 p-4">
-      <div className="container max-w-7xl p-16"> {/* Increased max-width and padding */}
+      <div className="container max-w-7xl p-16"> 
         <div className="flex h-full flex-wrap items-center justify-center text-neutral-800 dark:text-neutral-200">
-          <div className="block rounded-xl shadow-2xl dark:bg-neutral-800 bg-white w-full"> {/* Wider block, increased shadow */}
-            <div className="grid lg:grid-cols-2 gap-8"> {/* Changed to grid layout with gap */}
+          <div className="block rounded-xl shadow-2xl dark:bg-neutral-800 bg-white w-full"> 
+            <div className="grid lg:grid-cols-2 gap-8"> 
               {/* Left Column: List of Appointments */}
-              <div className="px-10 py-8 md:px-8 lg:px-12"> {/* Increased padding */}
+              <div className="px-10 py-8 md:px-8 lg:px-12"> 
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-neutral-800 dark:text-neutral-200">
                     Appointments for {date}
@@ -68,7 +68,7 @@ const DayPage = () => {
                     Back to Calendar
                   </button>
                 </div>
-                <ul className="bg-neutral-100 rounded-xl shadow-md p-6 space-y-4"> {/* Increased padding and added spacing */}
+                <ul className="bg-neutral-100 rounded-xl shadow-md p-6 space-y-4"> 
                   {appointments.length > 0 ? (
                     appointments.map((appointment, index) => (
                       <li
@@ -97,7 +97,7 @@ const DayPage = () => {
                   background: 'linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593)',
                 }}
               >
-                <div className="px-8 py-10 w-full"> {/* Increased padding */}
+                <div className="px-8 py-10 w-full">
                   <h3 className="mb-8 text-2xl font-bold text-white text-center">
                     Set an Appointment
                   </h3>
