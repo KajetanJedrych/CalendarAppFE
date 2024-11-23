@@ -1,16 +1,34 @@
 import axios from 'axios';
 
 const API_URL = 'http://127.0.0.1:8000/api/users';
-
-export const login = async (username, password) => {
+export const loginUser = async (username, password) => {
   try {
-    const response = await axios.post(`${API_URL}/login/`, { username, password });
-    if (response.data.access) {
-      localStorage.setItem('login', response.data.access);
+    const response = await axios.post(`${API_URL}/login/`, {
+      username,
+      password
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        // Add CORS headers if needed
+        'Accept': 'application/json'
+      }
+    });
+
+    console.log("Raw API Response:", response);
+
+    if (response.data && response.data.tokens && response.data.tokens.access) {
+      const accessToken = response.data.tokens.access;
+      localStorage.setItem('token', accessToken);
+      return response.data;
+    } else {
+      throw new Error("Invalid response format");
     }
-    return response.data;
   } catch (error) {
-    console.error('Error during login:', error);
+    console.error("Login error details:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
     throw error;
   }
 };

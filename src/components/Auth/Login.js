@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import { TEInput, TERipple } from "tw-elements-react";
-import { login } from '../../services/authService';
+import { loginUser } from '../../services/authService';
 import { useAuth } from "./AuthContex";
 
 const Login = () => {
@@ -9,18 +9,34 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login: authLogin } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Form validation
+    if (!username || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
     try {
-      const data = await login(username, password);
-      console.log("Login successful:", data); // Handle successful login (e.g., storing token)
-      localStorage.setItem('token', data.token);
-      setError(null);
-      navigate('/dashboard');
-    } catch (error) {
-      setError('Invalid credentials');
+      // Call login service
+      const response = await loginUser(username, password);
+      console.log("Login response:", response);
+      
+      // Check if we have valid tokens
+      if (response && response.tokens && response.tokens.access) {
+        // Save token and update auth context
+        authLogin(response.tokens.access);
+        setError(null);
+        navigate('/dashboard');
+      } else {
+        setError("Invalid response from server");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err.response?.data?.message || "Login failed. Please try again.");
     }
   };
 
