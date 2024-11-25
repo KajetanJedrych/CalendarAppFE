@@ -4,21 +4,60 @@ import axios from 'axios';
 import { TERipple } from 'tw-elements-react';
 
 
+const MASSAGE_SERVICES = [
+  { id: 1, name: 'Swedish Massage', duration: 60 },
+  { id: 2, name: 'Deep Tissue Massage', duration: 60 },
+  { id: 3, name: 'Sports Massage', duration: 90 },
+  { id: 4, name: 'Relaxation Massage', duration: 45 }
+];
+
 const DayPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
-  const date = queryParams.get('date'); // Extract selected date from query params
+  const date = queryParams.get('date');
 
   const [appointments, setAppointments] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [selectedWorker, setSelectedWorker] = useState('');
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    time: '',
     service: '',
+    employee: '',
+    time: '',
+    notes: ''
   });
 
   useEffect(() => {
-    // Fetch appointments for the selected date
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await axios.get('/api/current-user');
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+        navigate('/login'); // Redirect to login if not authenticated
+      }
+    };
+
+    fetchCurrentUser();
+  }, [navigate]);
+
+
+  useEffect(() => {
+    const fetchWorkers = async () => {
+      try {
+        const response = await axios.get('/api/employees');
+        setWorkers(response.data);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      }
+    };
+
+    fetchWorkers();
+  }, []);
+
+  useEffect(() => {
     const fetchAppointments = async () => {
       try {
         const response = await axios.get(`/api/appointments?date=${date}`);
@@ -31,19 +70,48 @@ const DayPage = () => {
     fetchAppointments();
   }, [date]);
 
-  const handleInputChange = (e) => {
+
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (formData.workerId && formData.service) {
+        try {
+          const selectedService = MASSAGE_SERVICES.find(s => s.id === parseInt(formData.service));
+          const response = await axios.get('/api/available-slots', {
+            params: {
+              date,
+              workerId: formData.workerId,
+              duration: selectedService.duration
+            }
+          });
+          setAvailableTimeSlots(response.data);
+        } catch (error) {
+          console.error('Error checking availability:', error);
+        }
+      }
+    };
+
+    checkAvailability();
+  }, [formData.workerId, formData.service, date]);
+
+
+const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/appointments', { ...formData, date });
-      // Refresh appointments list after submission
+      await axios.post('/api/appointments', {
+        ...formData,
+        date,
+        userId: currentUser.id,
+        userName: currentUser.name
+      });
+      
       const response = await axios.get(`/api/appointments?date=${date}`);
       setAppointments(response.data);
-      setFormData({ name: '', time: '', service: '' }); // Reset form
+      setFormData({ time: '', service: '', workerId: '' });
     } catch (error) {
       console.error('Error setting appointment:', error);
     }
@@ -51,12 +119,12 @@ const DayPage = () => {
 
   return (
     <section className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-neutral-700 p-4">
-      <div className="container max-w-7xl p-16"> 
+      <div className="container max-w-7xl p-16">
         <div className="flex h-full flex-wrap items-center justify-center text-neutral-800 dark:text-neutral-200">
-          <div className="block rounded-xl shadow-2xl dark:bg-neutral-800 bg-white w-full"> 
-            <div className="grid lg:grid-cols-2 gap-8"> 
+          <div className="block rounded-xl shadow-2xl dark:bg-neutral-800 bg-white w-full">
+            <div className="grid lg:grid-cols-2 gap-8">
               {/* Left Column: List of Appointments */}
-              <div className="px-10 py-8 md:px-8 lg:px-12"> 
+              <div className="px-10 py-8 md:px-8 lg:px-12">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-neutral-800 dark:text-neutral-200">
                     Appointments for {date}
@@ -68,17 +136,17 @@ const DayPage = () => {
                     Back to Calendar
                   </button>
                 </div>
-                <ul className="bg-neutral-100 rounded-xl shadow-md p-6 space-y-4"> 
+                <ul className="bg-neutral-100 rounded-xl shadow-md p-6 space-y-4">
                   {appointments.length > 0 ? (
                     appointments.map((appointment, index) => (
                       <li
                         key={index}
-                        className="p-3 border-b last:border-b-0 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-200 transition" // Added hover effect
+                        className="p-3 border-b last:border-b-0 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-200 transition"
                       >
-                        <strong className="text-lg">{appointment.time}</strong>: 
+                        <strong className="text-lg">{appointment.time}</strong>:
                         <span className="ml-2 text-base">{appointment.service}</span>
                         <span className="text-sm text-neutral-500 ml-2">
-                          (by {appointment.name})
+                          (by {appointment.userName})
                         </span>
                       </li>
                     ))
@@ -101,54 +169,73 @@ const DayPage = () => {
                   <h3 className="mb-8 text-2xl font-bold text-white text-center">
                     Set an Appointment
                   </h3>
-                  <form
-                    onSubmit={handleFormSubmit}
-                    className="bg-white rounded-xl shadow-2xl p-8 flex flex-col gap-6 text-neutral-700 dark:text-black font-medium " // Increased padding and gap
-                  >
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="Your Name"
-                      className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      required
-                    />
-                    <select
-                      name="time"
-                      value={formData.time}
-                      onChange={handleInputChange}
-                      className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      required
+                  {currentUser && (
+                    <form
+                      onSubmit={handleFormSubmit}
+                      className="bg-white rounded-xl shadow-2xl p-8 flex flex-col gap-6 text-neutral-700 dark:text-black font-medium"
                     >
-                      {Array.from({ length: 17 - 9 + 1 }, (_, i) => {
-                        const hour = 9 + i;
-                        return (
-                          <React.Fragment key={hour}>
-                            <option value={`${hour}:00`}>{`${hour}:00`}</option>
-                            {hour < 17 && <option value={`${hour}:30`}>{`${hour}:30`}</option>}
-                          </React.Fragment>
-                        );
-                      })}
-                    </select>
-                    <input
-                      type="text"
-                      name="service"
-                      value={formData.service}
-                      onChange={handleInputChange}
-                      placeholder="Service Type"
-                      className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      required
-                    />
-                    <TERipple rippleColor="light">
-                      <button
-                        type="submit"
-                        className="w-full rounded-lg text-lg bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white px-6 py-3 uppercase font-bold shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-1"
+                      <div className="text-lg border-2 rounded-lg border-neutral-300 p-3">
+                        Booking as: {currentUser.name}
+                      </div>
+
+                      <select
+                        name="workerId"
+                        value={formData.workerId}
+                        onChange={handleInputChange}
+                        className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        required
                       >
-                        Submit
-                      </button>
-                    </TERipple>
-                  </form>
+                        <option value="">Select Massage Therapist</option>
+                        {workers.map(worker => (
+                          <option key={worker.id} value={worker.id}>
+                            {worker.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        name="service"
+                        value={formData.service}
+                        onChange={handleInputChange}
+                        className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        required
+                      >
+                        <option value="">Select Service</option>
+                        {MASSAGE_SERVICES.map(service => (
+                          <option key={service.id} value={service.id}>
+                            {service.name} ({service.duration} min)
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        name="time"
+                        value={formData.time}
+                        onChange={handleInputChange}
+                        className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        required
+                        disabled={!availableTimeSlots.length}
+                      >
+                        <option value="">
+                          {availableTimeSlots.length ? 'Select Time' : 'Select worker and service first'}
+                        </option>
+                        {availableTimeSlots.map(slot => (
+                          <option key={slot} value={slot}>
+                            {slot}
+                          </option>
+                        ))}
+                      </select>
+
+                      <TERipple rippleColor="light">
+                        <button
+                          type="submit"
+                          className="w-full rounded-lg text-lg bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white px-6 py-3 uppercase font-bold shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-1"
+                        >
+                          Submit
+                        </button>
+                      </TERipple>
+                    </form>
+                  )}
                 </div>
               </div>
             </div>
@@ -157,6 +244,6 @@ const DayPage = () => {
       </div>
     </section>
   );
-}
+};
 
 export default DayPage;

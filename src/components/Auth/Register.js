@@ -21,7 +21,7 @@ const Register = () => {
     }
 
     try {
-      const data = await register(username, email, password);
+      const data = await register(username, email, password, confirmPassword);
       console.log("Registration successful:", data);
       setError(null);
       navigate('/login'); // Przekierowanie po rejestracji
