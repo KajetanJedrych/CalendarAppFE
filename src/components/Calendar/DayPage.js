@@ -10,7 +10,7 @@ const MASSAGE_SERVICES = [
   { id: 3, name: 'Sports Massage', duration: 90 },
   { id: 4, name: 'Relaxation Massage', duration: 45 }
 ];
-
+const API_URL = "http://127.0.0.1:8000/api/calendar"
 const DayPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ const DayPage = () => {
           return;
         }
 
-        const response = await axios.get('/api/current-user', {
+        const response = await axios.get('http://127.0.0.1:8000/api/users/current_user', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -61,7 +61,7 @@ const DayPage = () => {
     const fetchEmployees = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/api/employees', {
+        const response = await axios.get(`${API_URL}/employees/`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -80,7 +80,7 @@ const DayPage = () => {
     const fetchAppointments = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`/api/appointments?date=${date}`, {
+        const response = await axios.get(`${API_URL}/appointments?date=${date}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -103,7 +103,7 @@ const DayPage = () => {
         try {
           const token = localStorage.getItem('token');
           const selectedService = MASSAGE_SERVICES.find(s => s.id === parseInt(formData.service));
-          const response = await axios.get('/api/available-slots', {
+          const response = await axios.get(`${API_URL}/available-slots/`, {
             params: {
               date,
               employee_id: formData.employee,
@@ -133,7 +133,7 @@ const DayPage = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post('/api/appointments', {
+      await axios.post(`${API_URL}/create-appointment/`, {
         service: formData.service,
         employee: formData.employee,
         date,
@@ -146,7 +146,7 @@ const DayPage = () => {
       });
       
       // Refresh appointments
-      const response = await axios.get(`/api/appointments?date=${date}`, {
+      const response = await axios.get(`${API_URL}/appointments?date=${date}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
