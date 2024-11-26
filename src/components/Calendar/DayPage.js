@@ -28,15 +28,26 @@ const DayPage = () => {
     time: '',
     notes: ''
   });
+  // Fetch current user
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const response = await axios.get('/api/current-user');
+        const token = localStorage.getItem('token'); 
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
+        const response = await axios.get('/api/current-user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         setCurrentUser(response.data);
       } catch (error) {
         console.error('Error fetching current user:', error);
-        navigate('/login'); // Redirect to login if not authenticated
+        navigate('/login');
       }
     };
 
@@ -44,43 +55,62 @@ const DayPage = () => {
   }, [navigate]);
 
 
+  // Fetch employees
+
   useEffect(() => {
-    const fetchWorkers = async () => {
+    const fetchEmployees = async () => {
       try {
-        const response = await axios.get('/api/employees');
-        setWorkers(response.data);
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/employees', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setEmployees(response.data);
       } catch (error) {
         console.error('Error fetching employees:', error);
       }
     };
 
-    fetchWorkers();
+    fetchEmployees();
   }, []);
 
+    // Fetch appointments for the specific date
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await axios.get(`/api/appointments?date=${date}`);
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/appointments?date=${date}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         setAppointments(response.data);
       } catch (error) {
         console.error('Error fetching appointments:', error);
       }
     };
 
-    fetchAppointments();
+    if (date) {
+      fetchAppointments();
+    }
   }, [date]);
 
-
+  // Check availability of time slots
   useEffect(() => {
     const checkAvailability = async () => {
-      if (formData.workerId && formData.service) {
+      if (formData.employee && formData.service) {
         try {
+          const token = localStorage.getItem('token');
           const selectedService = MASSAGE_SERVICES.find(s => s.id === parseInt(formData.service));
           const response = await axios.get('/api/available-slots', {
             params: {
               date,
-              workerId: formData.workerId,
-              duration: selectedService.duration
+              employee_id: formData.employee,
+              service_id: formData.service
+            },
+            headers: {
+              'Authorization': `Bearer ${token}`
             }
           });
           setAvailableTimeSlots(response.data);
@@ -91,10 +121,10 @@ const DayPage = () => {
     };
 
     checkAvailability();
-  }, [formData.workerId, formData.service, date]);
+  }, [formData.employee, formData.service, date]);
 
 
-const handleInputChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -102,18 +132,32 @@ const handleInputChange = (e) => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       await axios.post('/api/appointments', {
-        ...formData,
+        service: formData.service,
+        employee: formData.employee,
         date,
-        userId: currentUser.id,
-        userName: currentUser.name
+        time: formData.time,
+        notes: formData.notes
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
-      const response = await axios.get(`/api/appointments?date=${date}`);
+      // Refresh appointments
+      const response = await axios.get(`/api/appointments?date=${date}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setAppointments(response.data);
-      setFormData({ time: '', service: '', workerId: '' });
+      
+      // Reset form
+      setFormData({ time: '', service: '', employee: '', notes: '' });
     } catch (error) {
       console.error('Error setting appointment:', error);
+      alert('Failed to create appointment. Please try again.');
     }
   };
 
@@ -179,16 +223,16 @@ const handleInputChange = (e) => {
                       </div>
 
                       <select
-                        name="workerId"
-                        value={formData.workerId}
+                        name="employee"
+                        value={formData.employee}
                         onChange={handleInputChange}
                         className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         required
                       >
                         <option value="">Select Massage Therapist</option>
-                        {workers.map(worker => (
-                          <option key={worker.id} value={worker.id}>
-                            {worker.name}
+                        {employees.map(employee => (
+                          <option key={employee.id} value={employee.id}>
+                            {employee.name}
                           </option>
                         ))}
                       </select>
