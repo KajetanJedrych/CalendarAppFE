@@ -5,10 +5,10 @@ import { TERipple } from 'tw-elements-react';
 
 
 const MASSAGE_SERVICES = [
-  { id: 1, name: 'Swedish Massage', duration: 60 },
-  { id: 2, name: 'Deep Tissue Massage', duration: 60 },
-  { id: 3, name: 'Sports Massage', duration: 90 },
-  { id: 4, name: 'Relaxation Massage', duration: 45 }
+  { id: 1, name: 'Swedish Massage', duration: 60, description: "Lorem ipsum dolor sit amet" },
+  { id: 2, name: 'Deep Tissue Massage', duration: 60, description: "Lorem ipsum dolor sit amet" },
+  { id: 3, name: 'Sports Massage', duration: 90, description: "Lorem ipsum dolor sit amet" },
+  { id: 4, name: 'Relaxation Massage', duration: 45, description: "Lorem ipsum dolor sit amet" }
 ];
 const API_URL = "http://127.0.0.1:8000/api/calendar"
 const DayPage = () => {
