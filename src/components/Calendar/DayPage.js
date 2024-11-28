@@ -3,13 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TERipple } from 'tw-elements-react';
 
-
-const MASSAGE_SERVICES = [
-  { id: 1, name: 'Swedish Massage', duration: 60, description: "Lorem ipsum dolor sit amet" },
-  { id: 2, name: 'Deep Tissue Massage', duration: 60, description: "Lorem ipsum dolor sit amet" },
-  { id: 3, name: 'Sports Massage', duration: 90, description: "Lorem ipsum dolor sit amet" },
-  { id: 4, name: 'Relaxation Massage', duration: 45, description: "Lorem ipsum dolor sit amet" }
-];
 const API_URL = "http://127.0.0.1:8000/api/calendar"
 const DayPage = () => {
   const location = useLocation();
@@ -22,14 +15,15 @@ const DayPage = () => {
   const [selectedWorker, setSelectedWorker] = useState('');
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [services, setServices] = useState([]);
   const [formData, setFormData] = useState({
     service: '',
     employee: '',
     time: '',
     notes: ''
   });
-  // Fetch current user
 
+  // Fetch current user
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
@@ -75,6 +69,25 @@ const DayPage = () => {
     fetchEmployees();
   }, []);
 
+  // Fetch services
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/services/`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setServices(response.data); // Update services with backend data
+      } catch (error) {
+        console.error('Error fetching services:', error);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
     // Fetch appointments for the specific date
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -102,7 +115,6 @@ const DayPage = () => {
       if (formData.employee && formData.service) {
         try {
           const token = localStorage.getItem('token');
-          const selectedService = MASSAGE_SERVICES.find(s => s.id === parseInt(formData.service));
           const response = await axios.get(`${API_URL}/available-slots/`, {
             params: {
               date,
@@ -110,7 +122,7 @@ const DayPage = () => {
               service_id: formData.service
             },
             headers: {
-              'Authorization': `Bearer ${token}`
+              Authorization: `Bearer ${token}`
             }
           });
           setAvailableTimeSlots(response.data);
@@ -219,7 +231,7 @@ const DayPage = () => {
                       className="bg-white rounded-xl shadow-2xl p-8 flex flex-col gap-6 text-neutral-700 dark:text-black font-medium"
                     >
                       <div className="text-lg border-2 rounded-lg border-neutral-300 p-3">
-                        Booking as: {currentUser.name}
+                        Booking as: {currentUser.username}
                       </div>
 
                       <select
@@ -245,7 +257,7 @@ const DayPage = () => {
                         required
                       >
                         <option value="">Select Service</option>
-                        {MASSAGE_SERVICES.map(service => (
+                        {services.map(service => (
                           <option key={service.id} value={service.id}>
                             {service.name} ({service.duration} min)
                           </option>
