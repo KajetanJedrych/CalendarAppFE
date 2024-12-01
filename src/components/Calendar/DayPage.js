@@ -145,7 +145,7 @@ const DayPage = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/create-appointment/`, {
+      await axios.post(`${API_URL}/appointments/create/`, {
         service: formData.service,
         employee: formData.employee,
         date,
