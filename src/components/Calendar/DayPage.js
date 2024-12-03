@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TERipple } from 'tw-elements-react';
+import { format } from 'date-fns';
 
 const API_URL = "http://127.0.0.1:8000/api/calendar"
 const DayPage = () => {
@@ -93,21 +94,42 @@ const DayPage = () => {
     const fetchAppointments = async () => {
       try {
         const token = localStorage.getItem('token');
+        console.log('Fetching appointments with date:', date);
+        console.log('Current user:', currentUser);
         const response = await axios.get(`${API_URL}/appointments?date=${date}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
+        console.log('Raw appointments response:', response.data);
+        response.data.forEach(appointment => {
+          console.log('Appointment details:', {
+            id: appointment.id,
+            user: appointment.user,
+            currentUserId: currentUser?.id,
+            match: appointment.user === currentUser?.id
+          });
+        });
+
+        const userAppointments = response.data.filter(
+          appointment => {
+            console.log('Filtering check:', appointment.user, currentUser?.id);
+            return appointment.user === currentUser?.id;
+          }
+        );
+        
+        console.log('Filtered user appointments:', userAppointments);
+
         setAppointments(response.data);
       } catch (error) {
         console.error('Error fetching appointments:', error);
       }
     };
 
-    if (date) {
+    if (date && currentUser) {
       fetchAppointments();
     }
-  }, [date]);
+  }, [date, currentUser]);
 
   // Check availability of time slots
   useEffect(() => {
@@ -192,20 +214,16 @@ const DayPage = () => {
                     Back to Calendar
                   </button>
                 </div>
-                <ul className="bg-neutral-100 rounded-xl shadow-md p-6 space-y-4">
+                <ul className="bg-neutral-100 rounded-xl shadow-md p-6 space-y-4 dark:text-black">
                   {appointments.length > 0 ? (
-                    appointments.map((appointment, index) => (
-                      <li
-                        key={index}
-                        className="p-3 border-b last:border-b-0 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-200 transition"
-                      >
-                        <strong className="text-lg">{appointment.time}</strong>:
-                        <span className="ml-2 text-base">{appointment.service}</span>
-                        <span className="text-sm text-neutral-500 ml-2">
-                          (by {appointment.userName})
-                        </span>
-                      </li>
-                    ))
+                    appointments
+                      .filter((appointment) => appointment.user === currentUser?.id)
+                      .map((appointment) => (
+                        <li key={appointment.id} className="p-3 border-b last:border-b-0 rounded-lg hover:bg-neutral-200 transition">
+                          <strong>{appointment.time}</strong>: <span>{appointment.service_name}</span>
+                          <span className="text-sm ml-2">(Przez {appointment.employee_name})</span>
+                       </li>
+                      ))
                   ) : (
                     <p className="text-neutral-600 dark:text-neutral-400 text-center text-lg">
                       No appointments scheduled for this date.
