@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Dashboard from './pages/Dashboard';
-import Calendar from './pages/Calendar';
 import DayPage from './components/Calendar/DayPage';
 import { getUserRole } from './services/authService';
 import "../node_modules/tw-elements/css/tw-elements.min.css";
@@ -22,14 +21,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/calendar"
-            element={
-              <ProtectedRoute>
-                <Calendar />
               </ProtectedRoute>
             }
           />
