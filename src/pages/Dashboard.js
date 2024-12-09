@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
+import 'moment/locale/pl';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+moment.locale('pl'); // Ustawienie języka polskiego
 const localizer = momentLocalizer(moment);
 const API_URL = "http://127.0.0.1:8000/api/calendar"
 
@@ -51,19 +53,23 @@ const ClientDashboard = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-
+      const isManager = currentUser?.groups?.includes('Managers');
       // Filter appointments for the current user
       const userAppointments = response.data.filter(
         appointment => appointment.user === currentUser?.id
       );
 
       // Transform appointments to calendar events
-      const calendarEvents = userAppointments.map(appointment => ({
+      const calendarEvents = response.data.map(appointment => ({
         title: `${appointment.service_name} - ${appointment.employee_name}`,
         start: new Date(`${appointment.date}T${appointment.time}`),
         end: moment(`${appointment.date}T${appointment.time}`).add(60, 'minutes').toDate(), // Assuming 1-hour duration
-        id: appointment.id
+        id: appointment.id,
+        user: appointment.user_name // Optional: add user info for managers
       }));
+      const filteredEvents = isManager 
+      ? calendarEvents 
+      : calendarEvents.filter(event => event.user === currentUser?.username);
 
       setEvents(calendarEvents);
     } catch (error) {
@@ -110,7 +116,7 @@ const ClientDashboard = () => {
           />
 
           <div className="w-full h-full bg-white shadow-lg rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200 mb-4">
+            <h2 className="text-center text-xl font-semibold text-neutral-800 mb-4">
               Twój kalendarz wizyt
             </h2>
 
@@ -131,6 +137,15 @@ const ClientDashboard = () => {
                   previous: 'Poprzedni',
                   next: 'Następny',
                   month: 'Miesiąc',
+                  week: 'Tydzień',
+                  day: 'Dzień',
+                  agenda: 'Agenda',
+                  date: 'Data',
+                  time: 'Czas',
+                  event: 'Wydarzenie',
+                  noEventsInRange: 'Brak wydarzeń w tym zakresie.',
+                  allDay: 'Cały dzień',
+                  showMore: total => `+${total} więcej`,
                 }}
               />
             </div>

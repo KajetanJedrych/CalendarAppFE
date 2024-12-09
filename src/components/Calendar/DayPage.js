@@ -101,6 +101,7 @@ const DayPage = () => {
             'Authorization': `Bearer ${token}`
           }
         });
+        const isManager = currentUser?.groups?.includes('Managers');
         console.log('Raw appointments response:', response.data);
         response.data.forEach(appointment => {
           console.log('Appointment details:', {
@@ -110,6 +111,11 @@ const DayPage = () => {
             match: appointment.user === currentUser?.id
           });
         });
+
+        const displayAppointments = isManager 
+        ? response.data 
+        : response.data.filter(appointment => appointment.user === currentUser?.id);
+        setAppointments(displayAppointments);
 
         const userAppointments = response.data.filter(
           appointment => {
@@ -205,28 +211,32 @@ const DayPage = () => {
               <div className="px-10 py-8 md:px-8 lg:px-12">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-neutral-800 dark:text-neutral-200">
-                    Appointments for {date}
+                    Twoje wizyty {date}
                   </h2>
                   <button
                     onClick={() => navigate(-1)}
                     className="text-md text-blue-600 hover:underline mt-2"
                   >
-                    Back to Calendar
+                    Powrót do kalendarza
                   </button>
                 </div>
                 <ul className="bg-neutral-100 rounded-xl shadow-md p-6 space-y-4 dark:text-black">
                   {appointments.length > 0 ? (
                     appointments
-                      .filter((appointment) => appointment.user === currentUser?.id)
                       .map((appointment) => (
                         <li key={appointment.id} className="p-3 border-b last:border-b-0 rounded-lg hover:bg-neutral-200 transition">
                           <strong>{appointment.time}</strong>: <span>{appointment.service_name}</span>
-                          <span className="text-sm ml-2">(Przez {appointment.employee_name})</span>
+                          <span className="text-sm ml-2">
+                            {/* Show username for managers */}
+                            {currentUser?.groups?.includes('Managers') 
+                              ? `(Dla ${appointment.user_name})` 
+                              : `(Przez ${appointment.employee_name})`}
+                          </span>
                        </li>
                       ))
                   ) : (
                     <p className="text-neutral-600 dark:text-neutral-400 text-center text-lg">
-                      No appointments scheduled for this date.
+                      Brak wizyt na ten dzień
                     </p>
                   )}
                 </ul>
@@ -241,7 +251,7 @@ const DayPage = () => {
               >
                 <div className="px-8 py-10 w-full">
                   <h3 className="mb-8 text-2xl font-bold text-white text-center">
-                    Set an Appointment
+                    Umów się na wizytę
                   </h3>
                   {currentUser && (
                     <form
@@ -249,7 +259,7 @@ const DayPage = () => {
                       className="bg-white rounded-xl shadow-2xl p-8 flex flex-col gap-6 text-neutral-700 dark:text-black font-medium"
                     >
                       <div className="text-lg border-2 rounded-lg border-neutral-300 p-3">
-                        Booking as: {currentUser.username}
+                        Rezerwujesz jako: {currentUser.username}
                       </div>
 
                       <select
@@ -259,7 +269,7 @@ const DayPage = () => {
                         className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         required
                       >
-                        <option value="">Select Massage Therapist</option>
+                        <option value="">Wybierz masażystę</option>
                         {employees.map(employee => (
                           <option key={employee.id} value={employee.id}>
                             {employee.name}
@@ -274,7 +284,7 @@ const DayPage = () => {
                         className="p-3 text-lg border-2 rounded-lg border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         required
                       >
-                        <option value="">Select Service</option>
+                        <option value="">Wybierz masaż</option>
                         {services.map(service => (
                           <option key={service.id} value={service.id}>
                             {service.name} ({service.duration} min)
@@ -291,7 +301,7 @@ const DayPage = () => {
                         disabled={!availableTimeSlots.length}
                       >
                         <option value="">
-                          {availableTimeSlots.length ? 'Select Time' : 'Select worker and service first'}
+                          {availableTimeSlots.length ? 'Wybierz godzinę' : 'Najpierw Wybierz masażystę i usuługę'}
                         </option>
                         {availableTimeSlots.map(slot => (
                           <option key={slot} value={slot}>
@@ -305,7 +315,7 @@ const DayPage = () => {
                           type="submit"
                           className="w-full rounded-lg text-lg bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white px-6 py-3 uppercase font-bold shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-1"
                         >
-                          Submit
+                          Umów
                         </button>
                       </TERipple>
                     </form>
